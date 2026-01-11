@@ -1,10 +1,13 @@
+# GoHome - Podman Compose
+# Run with: podman-compose up -d
+
 version: '3.8'
 
 services:
-  gohome-core:
+  gohome:
     build: .
     ports:
-      - "3000:3000"   # REST API
+      - "3000:3000"   # Web UI + API
       - "50051:50051" # gRPC
       - "8428:8428"   # Metrics
     environment:
@@ -12,13 +15,13 @@ services:
       - GRPC_PORT=:50051
       - METRICS_PORT=:8428
       - NATS_URL=nats://nats:4222
+      - STATIC_DIR=./static
     depends_on:
       - nats
-      - victoriametrics
     restart: unless-stopped
 
   nats:
-    image: nats:latest
+    image: docker.io/library/nats:latest
     ports:
       - "4222:4222"
       - "8222:8222"
@@ -26,7 +29,7 @@ services:
     restart: unless-stopped
 
   victoriametrics:
-    image: victoriametrics/victoria-metrics:latest
+    image: docker.io/victoriametrics/victoria-metrics:latest
     ports:
       - "8429:8428"
     volumes:

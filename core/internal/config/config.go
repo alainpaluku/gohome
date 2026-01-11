@@ -7,6 +7,7 @@ type Config struct {
 	GRPCPort    string
 	MetricsPort string
 	NatsURL     string
+	StaticDir   string
 }
 
 func Load() *Config {
@@ -15,6 +16,7 @@ func Load() *Config {
 		GRPCPort:    getEnv("GRPC_PORT", ":50051"),
 		MetricsPort: getEnv("METRICS_PORT", ":8428"),
 		NatsURL:     getEnv("NATS_URL", "nats://localhost:4222"),
+		StaticDir:   getEnv("STATIC_DIR", "./static"),
 	}
 }
 

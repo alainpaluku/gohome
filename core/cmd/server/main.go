@@ -20,23 +20,26 @@ func main() {
 	metricsServer := metrics.NewServer(cfg.MetricsPort)
 	go metricsServer.Start()
 
-	// Initialize NATS messaging
-	natsClient, err := messaging.NewNATSClient(cfg.NatsURL)
+	// Initialize NATS messaging (optional - continue if not available)
+	var natsClient *messaging.NATSClient
+	var err error
+	natsClient, err = messaging.NewNATSClient(cfg.NatsURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to NATS: %v", err)
+		log.Printf("Warning: NATS not available: %v (running without messaging)", err)
+	} else {
+		defer natsClient.Close()
 	}
-	defer natsClient.Close()
 
 	// Initialize gRPC server for device communication
 	grpcSrv := grpcserver.NewServer(cfg.GRPCPort, natsClient)
 	go grpcSrv.Start()
 
-	// Initialize REST API (Fiber)
-	apiServer := api.NewServer(cfg.APIPort, natsClient)
+	// Initialize REST API + Static files (Fiber)
+	apiServer := api.NewServer(cfg.APIPort, natsClient, cfg.StaticDir)
 	go apiServer.Start()
 
-	log.Printf("GoHome Core started - API: %s, gRPC: %s, Metrics: %s",
-		cfg.APIPort, cfg.GRPCPort, cfg.MetricsPort)
+	log.Printf("GoHome started - http://localhost%s", cfg.APIPort)
+	log.Printf("API: %s | gRPC: %s | Metrics: %s", cfg.APIPort, cfg.GRPCPort, cfg.MetricsPort)
 
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)

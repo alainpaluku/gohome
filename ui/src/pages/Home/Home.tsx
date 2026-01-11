@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,12 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { api, Device } from "@/lib/api";
+
+const DEVICE_ICONS: Record<string, string> = {
+  lamp: "https://cdn-icons-png.flaticon.com/512/3602/3602145.png",
+  thermostat: "https://cdn-icons-png.flaticon.com/512/1530/1530297.png",
+  tv: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png",
+  camera: "https://cdn-icons-png.flaticon.com/512/2642/2642268.png",
+  sensor: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png",
+};
 
 const Home = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [activeRoom, setActiveRoom] = useState("living_room");
-  const [open, setOpen] = useState(false);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const rooms = [
     { id: "living_room", name: "living_room" },
@@ -27,73 +37,66 @@ const Home = () => {
     { id: "backyard", name: "backyard" },
     { id: "terrace", name: "terrace" },
   ];
-  
-  // Devices data
-  const [devices, setDevices] = useState([
-    { 
-      id: "1", 
-      name: t('smart_lamp'), 
-      icon: "https://cdn-icons-png.flaticon.com/512/3602/3602145.png", 
-      room: "living_room", 
-      isOn: true, 
-      since: "09:30" 
-    },
-    { 
-      id: "2", 
-      name: t('thermostat'), 
-      icon: "https://cdn-icons-png.flaticon.com/512/1530/1530297.png", 
-      room: "living_room", 
-      isOn: true, 
-      since: "08:15" 
-    },
-    { 
-      id: "3", 
-      name: t('smart_tv'), 
-      icon: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png", 
-      room: "living_room", 
-      isOn: false, 
-      since: "11:45" 
-    },
-    { 
-      id: "4", 
-      name: t('camera'), 
-      icon: "https://cdn-icons-png.flaticon.com/512/2642/2642268.png", 
-      room: "bedroom", 
-      isOn: true, 
-      since: "07:20" 
-    },
-  ]);
 
-  const handleDeviceToggle = (deviceId: string) => {
-    setDevices(prevDevices => 
-      prevDevices.map(device => 
-        device.id === deviceId 
-          ? { ...device, isOn: !device.isOn } 
-          : device
-      )
-    );
-    
+  // Fetch devices from API
+  useEffect(() => {
+    const fetchDevices = async () => {
+      try {
+        const data = await api.getDevices();
+        setDevices(data || []);
+      } catch (error) {
+        console.error("Failed to fetch devices:", error);
+        toast({
+          title: "Connection error",
+          description: "Could not connect to the server. Using offline mode.",
+          variant: "destructive",
+        });
+        // Fallback to demo data
+        setDevices([
+          { id: "1", name: t('smart_lamp'), type: "lamp", room: "living_room", is_on: true, updated_at: "" },
+          { id: "2", name: t('thermostat'), type: "thermostat", room: "living_room", is_on: true, updated_at: "" },
+          { id: "3", name: t('smart_tv'), type: "tv", room: "living_room", is_on: false, updated_at: "" },
+          { id: "4", name: t('camera'), type: "camera", room: "bedroom", is_on: true, updated_at: "" },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDevices();
+  }, [t, toast]);
+
+  const handleDeviceToggle = async (deviceId: string) => {
     const device = devices.find(d => d.id === deviceId);
-    if (device) {
+    if (!device) return;
+
+    // Optimistic update
+    setDevices(prev => prev.map(d => 
+      d.id === deviceId ? { ...d, is_on: !d.is_on } : d
+    ));
+
+    try {
+      await api.sendCommand(deviceId, { action: "toggle" });
       toast({
-        title: device.isOn ? `${device.name} turned off` : `${device.name} turned on`,
-        description: `The device has been ${device.isOn ? 'deactivated' : 'activated'}`,
+        title: device.is_on ? `${device.name} turned off` : `${device.name} turned on`,
+        description: `The device has been ${device.is_on ? 'deactivated' : 'activated'}`,
+      });
+    } catch (error) {
+      // Revert on error
+      setDevices(prev => prev.map(d => 
+        d.id === deviceId ? { ...d, is_on: device.is_on } : d
+      ));
+      toast({
+        title: "Error",
+        description: "Failed to toggle device",
+        variant: "destructive",
       });
     }
   };
 
   const filteredDevices = devices.filter(device => device.room === activeRoom);
 
-  // Weather and power consumption data (simplified)
-  const weather = {
-    temperature: "24°",
-    condition: "Mostly Clear"
-  };
-  
-  const powerUsage = {
-    today: "29kWh",
-    thisMonth: "439kWh"
-  };
+  const weather = { temperature: "24°", condition: "Mostly Clear" };
+  const powerUsage = { today: "29kWh", thisMonth: "439kWh" };
   
   return (
     <div className="space-y-8">
@@ -133,9 +136,7 @@ const Home = () => {
             <CardTitle>{t('power_consumption')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('summary_energy')}
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">{t('summary_energy')}</p>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-muted/40 rounded-xl p-4 text-center">
                 <span className="block font-medium text-lg">{powerUsage.today}</span>
@@ -159,19 +160,30 @@ const Home = () => {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredDevices.map((device) => (
-            <DeviceCard
-              key={device.id}
-              name={device.name}
-              icon={device.icon}
-              room={t(device.room)}
-              isOn={device.isOn}
-              since={device.since}
-              onToggle={() => handleDeviceToggle(device.id)}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredDevices.map((device) => (
+              <DeviceCard
+                key={device.id}
+                name={device.name}
+                icon={DEVICE_ICONS[device.type] || DEVICE_ICONS.sensor}
+                room={t(device.room)}
+                isOn={device.is_on}
+                since=""
+                onToggle={() => handleDeviceToggle(device.id)}
+              />
+            ))}
+            {filteredDevices.length === 0 && (
+              <p className="text-muted-foreground col-span-full text-center py-8">
+                {t('no_devices')}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
