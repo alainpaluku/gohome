@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package gohome;
+
+option go_package = "github.com/alainpaluku/gohome/core/proto";
+
+service DeviceService {
+  rpc GetDevice(DeviceRequest) returns (DeviceResponse);
+  rpc SetState(SetStateRequest) returns (DeviceResponse);
+  rpc StreamState(DeviceRequest) returns (stream DeviceState);
+  rpc RegisterDevice(RegisterRequest) returns (DeviceResponse);
+}
+
+message DeviceRequest {
+  string device_id = 1;
+}
+
+message RegisterRequest {
+  string device_id = 1;
+  string name = 2;
+  string type = 3;
+  string room = 4;
+}
+
+message SetStateRequest {
+  string device_id = 1;
+  bool is_on = 2;
+  double value = 3;
+}
+
+message DeviceResponse {
+  string device_id = 1;
+  string name = 2;
+  string type = 3;
+  string room = 4;
+  bool is_on = 5;
+  double value = 6;
+  int64 updated_at = 7;
+}
+
+message DeviceState {
+  string device_id = 1;
+  bool is_on = 2;
+  double value = 3;
+  int64 timestamp = 4;
+}

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  gohome-core:
+    build: .
+    ports:
+      - "3000:3000"   # REST API
+      - "50051:50051" # gRPC
+      - "8428:8428"   # Metrics
+    environment:
+      - API_PORT=:3000
+      - GRPC_PORT=:50051
+      - METRICS_PORT=:8428
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+      - victoriametrics
+    restart: unless-stopped
+
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["--http_port", "8222"]
+    restart: unless-stopped
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    ports:
+      - "8429:8428"
+    volumes:
+      - vm-data:/victoria-metrics-data
+    command:
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-retentionPeriod=30d"
+    restart: unless-stopped
+
+volumes:
+  vm-data:
