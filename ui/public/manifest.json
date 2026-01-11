@@ -1,0 +1,17 @@
+
+{
+  "name": "Smart Home Hub",
+  "short_name": "SmartHome",
+  "description": "Control your smart home devices from anywhere",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7C5DFA",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
