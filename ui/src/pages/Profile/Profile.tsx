@@ -21,7 +21,7 @@ const Profile = () => {
             </CardHeader>
             <CardContent className="flex flex-col items-center text-center">
               <Avatar className="w-32 h-32">
-                <AvatarImage src="/lovable-uploads/dae0a347-6f44-418c-bdd5-bab6e4b3412e.png" alt="User avatar" />
+                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" alt="User avatar" />
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
               <h2 className="mt-4 text-xl font-semibold">Adrian Donovan</h2>

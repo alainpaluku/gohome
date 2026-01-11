@@ -23,7 +23,7 @@ const Header = () => {
         
         <Link to="/profile">
           <Avatar className="cursor-pointer hover:opacity-90 transition-opacity">
-            <AvatarImage src="/lovable-uploads/dae0a347-6f44-418c-bdd5-bab6e4b3412e.png" />
+            <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" />
             <AvatarFallback>UN</AvatarFallback>
           </Avatar>
         </Link>

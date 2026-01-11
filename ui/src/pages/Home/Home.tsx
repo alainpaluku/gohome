@@ -33,7 +33,7 @@ const Home = () => {
     { 
       id: "1", 
       name: t('smart_lamp'), 
-      icon: "/lovable-uploads/824b1b8b-cc18-4e3a-8468-b66cf0f2a2fe.png", 
+      icon: "https://cdn-icons-png.flaticon.com/512/3602/3602145.png", 
       room: "living_room", 
       isOn: true, 
       since: "09:30" 
@@ -41,7 +41,7 @@ const Home = () => {
     { 
       id: "2", 
       name: t('thermostat'), 
-      icon: "/lovable-uploads/2cbcb46a-3feb-4b2c-84e6-da3549c56ff8.png", 
+      icon: "https://cdn-icons-png.flaticon.com/512/1530/1530297.png", 
       room: "living_room", 
       isOn: true, 
       since: "08:15" 
@@ -49,7 +49,7 @@ const Home = () => {
     { 
       id: "3", 
       name: t('smart_tv'), 
-      icon: "/lovable-uploads/e30022b8-3715-49c6-a593-e76b1d39f5dc.png", 
+      icon: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png", 
       room: "living_room", 
       isOn: false, 
       since: "11:45" 
@@ -57,7 +57,7 @@ const Home = () => {
     { 
       id: "4", 
       name: t('camera'), 
-      icon: "/lovable-uploads/dae0a347-6f44-418c-bdd5-bab6e4b3412e.png", 
+      icon: "https://cdn-icons-png.flaticon.com/512/2642/2642268.png", 
       room: "bedroom", 
       isOn: true, 
       since: "07:20" 
